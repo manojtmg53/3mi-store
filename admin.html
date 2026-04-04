@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — 3mi Store</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+<!-- ══ LOADING ══ -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo"><span>3</span>mi</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+</div>
+
+<!-- ══ AUTH GATE ══ -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-gate-inner">
+    <div class="login-logo"><span>3</span>mi Admin</div>
+    <h2>Admin Dashboard</h2>
+    <p>Sign in to manage your store</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="gateEmail" placeholder="admin@3mistore.com"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pw-input-wrap">
+        <input type="password" id="gatePassword" placeholder="Password"/>
+        <button type="button" class="pw-toggle" id="gatePwToggle">👁</button>
+      </div>
+    </div>
+    <p class="login-error" id="gateError"></p>
+    <button class="btn-primary full-width" id="gateLoginBtn">Sign In</button>
+    <a href="index.html" class="btn-ghost" style="display:block;text-align:center;margin-top:8px">← Back to Store</a>
+  </div>
+</div>
+
+<!-- ══ ADMIN LAYOUT ══ -->
+<div class="admin-layout" id="adminLayout" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-logo">
+      <span class="logo-accent">3</span>mi<span class="logo-tag">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-panel="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-panel="products">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+        Products
+      </button>
+      <button class="nav-item" data-panel="addProduct">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Add Product
+      </button>
+      <button class="nav-item" data-panel="storeSettings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Store Settings
+      </button>
+      <button class="nav-item" data-panel="socialLinks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        Social Links
+      </button>
+      <button class="nav-item" data-panel="heroSettings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+        Hero / Banner
+      </button>
+      <button class="nav-item" data-panel="appearance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/></svg>
+        Appearance
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="index.html" class="nav-item" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View Store
+      </a>
+      <button class="nav-item danger" id="logoutBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-user" id="topbarUser"></div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="panel-header">
+        <h2>Dashboard</h2>
+        <p>Welcome back, Admin 👋</p>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <div class="stat-num" id="statProducts">0</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-info">
+            <div class="stat-num" id="statCategories">0</div>
+            <div class="stat-label">Categories</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDiscounted">0</div>
+            <div class="stat-label">On Sale</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <div class="stat-num" id="statFeatured">0</div>
+            <div class="stat-label">Featured</div>
+          </div>
+        </div>
+      </div>
+      <div class="recent-products">
+        <h3>Recent Products</h3>
+        <div class="mini-product-list" id="recentProductsList"></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS LIST ── -->
+    <div class="panel" id="panel-products">
+      <div class="panel-header">
+        <h2>Products</h2>
+        <button class="btn-primary" onclick="switchPanel('addProduct')">+ Add Product</button>
+      </div>
+      <div class="product-filters">
+        <input type="text" class="admin-search" id="adminSearch" placeholder="Search products…"/>
+        <select class="admin-filter-select" id="adminCatFilter"><option value="">All Categories</option></select>
+        <select class="admin-filter-select" id="adminTypeFilter">
+          <option value="">All Types</option>
+          <option>New</option><option>Sale</option><option>Hot</option>
+          <option>Featured</option><option>Limited</option>
+        </select>
+      </div>
+      <div class="admin-product-table" id="adminProductTable">
+        <div class="table-head">
+          <span>Image</span><span>Name</span><span>Category</span>
+          <span>Type</span><span>Price</span><span>Stock</span><span>Actions</span>
+        </div>
+        <div class="table-body" id="tableBody"></div>
+      </div>
+    </div>
+
+    <!-- ── ADD / EDIT PRODUCT ── -->
+    <div class="panel" id="panel-addProduct">
+      <div class="panel-header">
+        <h2 id="productPanelTitle">Add New Product</h2>
+        <button class="btn-secondary" id="cancelEditBtnAdmin" style="display:none" onclick="cancelEdit()">✕ Cancel Edit</button>
+      </div>
+      <form id="adminProductForm" novalidate>
+        <input type="hidden" id="adminEditId"/>
+        <div class="form-section">
+          <h3 class="form-section-title">📋 Basic Info</h3>
+          <div class="form-grid-3">
+            <div class="form-group span-3">
+              <label>Product Name *</label>
+              <input type="text" id="apName" placeholder="e.g. Nike Air Max 270" required/>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <input type="text" id="apCategory" placeholder="e.g. Shoes" list="adminCatSuggestions" required/>
+              <datalist id="adminCatSuggestions"></datalist>
+            </div>
+            <div class="form-group">
+              <label>Brand</label>
+              <input type="text" id="apBrand" placeholder="e.g. Nike"/>
+            </div>
+            <div class="form-group">
+              <label>Product Type</label>
+              <select id="apType">
+                <option value="New">🆕 New</option>
+                <option value="Sale">🔥 Sale</option>
+                <option value="Hot">⚡ Hot</option>
+                <option value="Featured">⭐ Featured</option>
+                <option value="Limited">🎯 Limited</option>
+              </select>
+            </div>
+            <div class="form-group span-3">
+              <label>Short Description</label>
+              <input type="text" id="apShortDesc" placeholder="One-line product summary (shown on card)"/>
+            </div>
+            <div class="form-group span-3">
+              <label>Full Description</label>
+              <textarea id="apDesc" rows="4" placeholder="Detailed product description shown in product popup…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">💰 Pricing & Stock</h3>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Original Price (Rs.) *</label>
+              <input type="number" id="apOriginalPrice" placeholder="1000" min="1" required/>
+            </div>
+            <div class="form-group">
+              <label>Discount (%)</label>
+              <input type="number" id="apDiscount" placeholder="0" min="0" max="100" value="0"/>
+            </div>
+            <div class="form-group">
+              <label>Final Price (auto)</label>
+              <div class="calc-display" id="apCalcDisplay">Rs. —</div>
+            </div>
+            <div class="form-group">
+              <label>Stock Quantity</label>
+              <input type="number" id="apStock" placeholder="100" min="0" value=""/>
+            </div>
+            <div class="form-group">
+              <label>SKU / Product Code</label>
+              <input type="text" id="apSku" placeholder="e.g. NK-AM270-BLK"/>
+            </div>
+            <div class="form-group">
+              <label>Weight (grams)</label>
+              <input type="number" id="apWeight" placeholder="500"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">🖼️ Images</h3>
+          <div class="form-group">
+            <label>Main Image URL</label>
+            <input type="url" id="apImage1" placeholder="https://example.com/product.jpg"/>
+          </div>
+          <div class="form-group">
+            <label>Image 2 (optional)</label>
+            <input type="url" id="apImage2" placeholder="https://example.com/product-2.jpg"/>
+          </div>
+          <div class="form-group">
+            <label>Image 3 (optional)</label>
+            <input type="url" id="apImage3" placeholder="https://example.com/product-3.jpg"/>
+          </div>
+          <div class="image-previews" id="adminImgPreviews"></div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Upload Image File</label>
+            <input type="file" id="apImageFile" accept="image/*"/>
+            <small>Converts to base64 and stores in Firestore</small>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">📐 Specifications</h3>
+          <div class="form-group">
+            <label>Available Sizes (comma-separated)</label>
+            <input type="text" id="apSizes" placeholder="S, M, L, XL, XXL"/>
+          </div>
+          <div class="form-group">
+            <label>Available Colors (comma-separated)</label>
+            <input type="text" id="apColors" placeholder="Black, White, Red"/>
+          </div>
+          <div class="form-group">
+            <label>Material</label>
+            <input type="text" id="apMaterial" placeholder="e.g. 100% Cotton"/>
+          </div>
+          <div class="spec-builder" id="specBuilder">
+            <label>Custom Specifications</label>
+            <div class="spec-rows" id="specRows"></div>
+            <button type="button" class="btn-ghost-sm" id="addSpecBtn">+ Add Specification</button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">⚙️ Options</h3>
+          <div class="form-grid-2">
+            <label class="toggle-label">
+              <input type="checkbox" id="apFeatured"/> Featured product
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="apInStock" checked/> In Stock
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="apVisible" checked/> Visible on store
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="apFreeShipping"/> Free Shipping
+            </label>
+          </div>
+          <div class="form-group" style="margin-top:14px">
+            <label>Custom Badge Text (optional)</label>
+            <input type="text" id="apBadge" placeholder="e.g. 🎁 Gift Pack, Bestseller…"/>
+          </div>
+          <div class="form-group">
+            <label>Tags (comma-separated)</label>
+            <input type="text" id="apTags" placeholder="summer, trending, gift…"/>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="submit" class="btn-primary" id="apSubmitBtn">✓ Save Product</button>
+          <button type="button" class="btn-secondary" onclick="resetProductForm()">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── STORE SETTINGS ── -->
+    <div class="panel" id="panel-storeSettings">
+      <div class="panel-header">
+        <h2>Store Settings</h2>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>🏪 Store Identity</h3>
+          <div class="form-group">
+            <label>Store Name</label>
+            <input type="text" id="sStoreName" placeholder="3mi Store"/>
+          </div>
+          <div class="form-group">
+            <label>Store Tagline</label>
+            <input type="text" id="sTagline" placeholder="Quality products, delivered."/>
+          </div>
+          <div class="form-group">
+            <label>Store Logo URL (optional)</label>
+            <input type="url" id="sLogoUrl" placeholder="https://…/logo.png"/>
+          </div>
+          <div class="form-group">
+            <label>Footer Copyright Text</label>
+            <input type="text" id="sCopyright" placeholder="© 2025 3mi Store. All rights reserved."/>
+          </div>
+          <button class="btn-primary" id="saveIdentityBtn">Save Identity</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>📱 Contact Info</h3>
+          <div class="form-group">
+            <label>WhatsApp Number (with country code)</label>
+            <input type="text" id="sWhatsapp" placeholder="9779800000000"/>
+            <small>Used for WhatsApp checkout. Nepal: 977XXXXXXXXXX</small>
+          </div>
+          <div class="form-group">
+            <label>Phone (display)</label>
+            <input type="text" id="sPhone" placeholder="+977-9800000000"/>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="sEmail" placeholder="info@3mistore.com"/>
+          </div>
+          <div class="form-group">
+            <label>Physical Address</label>
+            <input type="text" id="sAddress" placeholder="Kathmandu, Nepal"/>
+          </div>
+          <button class="btn-primary" id="saveContactBtn">Save Contact</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>📢 Announcement Bar</h3>
+          <label class="toggle-label" style="margin-bottom:12px">
+            <input type="checkbox" id="sAnnouncementEnabled"/> Enable announcement bar
+          </label>
+          <div class="form-group">
+            <label>Announcement Text</label>
+            <input type="text" id="sAnnouncementText" placeholder="🎉 Free delivery on orders above Rs. 2000!"/>
+          </div>
+          <div class="form-group">
+            <label>Bar Color</label>
+            <input type="color" id="sAnnouncementColor" value="#e63950"/>
+          </div>
+          <button class="btn-primary" id="saveAnnouncementBtn">Save Announcement</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>🚚 Shipping Settings</h3>
+          <div class="form-group">
+            <label>Delivery Areas (comma-separated)</label>
+            <input type="text" id="sDeliveryAreas" placeholder="Kathmandu, Lalitpur, Bhaktapur"/>
+          </div>
+          <div class="form-group">
+            <label>Delivery Time</label>
+            <input type="text" id="sDeliveryTime" placeholder="2-3 business days"/>
+          </div>
+          <div class="form-group">
+            <label>Minimum Order for Free Delivery (Rs.)</label>
+            <input type="number" id="sFreeDeliveryMin" placeholder="2000"/>
+          </div>
+          <div class="form-group">
+            <label>Standard Delivery Charge (Rs.)</label>
+            <input type="number" id="sDeliveryCharge" placeholder="100"/>
+          </div>
+          <button class="btn-primary" id="saveShippingBtn">Save Shipping</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SOCIAL LINKS ── -->
+    <div class="panel" id="panel-socialLinks">
+      <div class="panel-header">
+        <h2>Social Links</h2>
+        <p>Add links to your social media pages</p>
+      </div>
+      <div class="social-editor">
+        <div class="social-item-editor" data-platform="whatsapp">
+          <div class="social-editor-icon" style="background:#25D366">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">WhatsApp</span>
+            <input type="text" placeholder="977XXXXXXXXXX (number only)" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="facebook">
+          <div class="social-editor-icon" style="background:#1877F2">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">Facebook</span>
+            <input type="url" placeholder="https://facebook.com/yourpage" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="instagram">
+          <div class="social-editor-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">Instagram</span>
+            <input type="url" placeholder="https://instagram.com/yourpage" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="tiktok">
+          <div class="social-editor-icon" style="background:#000">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.02-.06z"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">TikTok</span>
+            <input type="url" placeholder="https://tiktok.com/@yourpage" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="youtube">
+          <div class="social-editor-icon" style="background:#FF0000">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#FF0000"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">YouTube</span>
+            <input type="url" placeholder="https://youtube.com/@yourchannel" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="twitter">
+          <div class="social-editor-icon" style="background:#000">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M4 4l16 16M4 20 20 4" stroke="white" stroke-width="2.5" fill="none"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">X (Twitter)</span>
+            <input type="url" placeholder="https://x.com/yourhandle" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="telegram">
+          <div class="social-editor-icon" style="background:#26A5E4">
+            <svg viewBox="0 0 24 24" fill="white" width="22"><path d="M22 2L11 13M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">Telegram</span>
+            <input type="url" placeholder="https://t.me/yourchannel" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+        <div class="social-item-editor" data-platform="snapchat">
+          <div class="social-editor-icon" style="background:#FFFC00">
+            <svg viewBox="0 0 24 24" fill="#000" width="22"><path d="M12.166 2c.93 0 4.369.26 5.963 3.607.49 1.044.373 2.808.28 4.085l-.01.145c-.006.08.04.196.107.232.242.13.777.026 1.082-.052.15-.039.326-.058.49-.058.472 0 .892.23.967.535.1.41-.27.83-.965 1.078-.096.034-.205.069-.326.107-.56.179-1.329.424-1.536 1.013-.067.188-.046.397.063.619.677 1.37 1.93 2.27 2.94 2.41.282.04.482.3.428.573-.29 1.48-2.434 1.98-3.27 2.1-.08.01-.158.07-.195.163-.063.155-.082.374-.1.622-.022.268-.05.606-.174.888-.09.2-.28.312-.5.312a1.09 1.09 0 0 1-.348-.06c-.544-.185-1.023-.28-1.47-.28-.26 0-.508.034-.737.095-.517.14-1.033.454-1.573.784-.86.52-1.748 1.058-2.87 1.058-.1 0-.2-.005-.304-.016-1.102-.117-1.978-.651-2.826-1.17-.53-.32-1.037-.625-1.544-.762-.227-.06-.473-.093-.73-.093-.45 0-.93.098-1.474.286a1.07 1.07 0 0 1-.35.062c-.216 0-.408-.112-.498-.3-.127-.285-.154-.627-.176-.9-.019-.248-.037-.468-.1-.625-.036-.09-.115-.15-.194-.162C3.07 18.17.927 17.67.637 16.19c-.054-.273.146-.534.427-.573 1.01-.14 2.264-1.04 2.94-2.41.11-.222.13-.43.063-.619-.207-.59-.976-.834-1.536-1.013a4.88 4.88 0 0 1-.326-.107C1.51 11.22 1.14 10.8 1.24 10.39c.075-.306.494-.535.966-.535.164 0 .34.02.49.058.305.078.84.18 1.082.052.066-.036.113-.152.107-.232l-.01-.145c-.093-1.277-.21-3.04.28-4.085C5.748 2.26 9.235 2 12.166 2z"/></svg>
+          </div>
+          <div class="social-editor-fields">
+            <span class="social-platform-name">Snapchat</span>
+            <input type="url" placeholder="https://snapchat.com/add/yourname" data-field="url"/>
+            <label class="toggle-label"><input type="checkbox" data-field="enabled"/> Show on site</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:20px">
+        <label>Social Section Label (shown on store)</label>
+        <input type="text" id="socialSectionLabel" placeholder="Find us on"/>
+      </div>
+      <button class="btn-primary" id="saveSocialBtn" style="margin-top:16px">💾 Save Social Links</button>
+    </div>
+
+    <!-- ── HERO / BANNER ── -->
+    <div class="panel" id="panel-heroSettings">
+      <div class="panel-header">
+        <h2>Hero / Banner Settings</h2>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-card span-2">
+          <h3>🖼️ Hero Section</h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Eyebrow Text (small text above title)</label>
+              <input type="text" id="hEyebrow" placeholder="Welcome to"/>
+            </div>
+            <div class="form-group">
+              <label>Hero Title</label>
+              <input type="text" id="hTitle" placeholder="3mi Store"/>
+            </div>
+            <div class="form-group span-2">
+              <label>Hero Subtitle</label>
+              <input type="text" id="hSubtitle" placeholder="Discover curated products at unbeatable prices."/>
+            </div>
+            <div class="form-group">
+              <label>Primary Button Text</label>
+              <input type="text" id="hBtnText" placeholder="Shop Now"/>
+            </div>
+            <div class="form-group">
+              <label>Secondary Button Text (optional)</label>
+              <input type="text" id="hBtn2Text" placeholder="Learn More"/>
+            </div>
+            <div class="form-group">
+              <label>Secondary Button Link</label>
+              <input type="url" id="hBtn2Link" placeholder="https://…"/>
+            </div>
+            <div class="form-group">
+              <label>Hero Background Color</label>
+              <input type="color" id="hBgColor" value="#0f0e0d"/>
+            </div>
+            <div class="form-group">
+              <label>Accent / Glow Color</label>
+              <input type="color" id="hAccentColor" value="#e63950"/>
+            </div>
+          </div>
+          <button class="btn-primary" id="saveHeroBtn" style="margin-top:16px">Save Hero Settings</button>
+        </div>
+        <div class="settings-card">
+          <h3>📊 Stats Bar</h3>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:14px">Show quick stats under hero (e.g. "500+ Products")</p>
+          <label class="toggle-label" style="margin-bottom:12px"><input type="checkbox" id="hShowStats"/> Show stats bar</label>
+          <div id="statsEditor"></div>
+          <button type="button" class="btn-ghost-sm" id="addStatBtn" style="margin-top:8px">+ Add Stat</button>
+          <button class="btn-primary" id="saveStatsBtn" style="margin-top:14px">Save Stats</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── APPEARANCE ── -->
+    <div class="panel" id="panel-appearance">
+      <div class="panel-header">
+        <h2>Appearance</h2>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>🎨 Colors</h3>
+          <div class="form-group">
+            <label>Primary Accent Color</label>
+            <input type="color" id="aAccent" value="#e63950"/>
+            <small>Used for buttons, badges, highlights</small>
+          </div>
+          <div class="form-group">
+            <label>Header Background (light mode)</label>
+            <input type="color" id="aHeaderBg" value="#f8f6f2"/>
+          </div>
+          <div class="form-group">
+            <label>Footer Background</label>
+            <input type="color" id="aFooterBg" value="#0f0e0d"/>
+          </div>
+          <button class="btn-primary" id="saveColorsBtn">Apply Colors</button>
+        </div>
+        <div class="settings-card">
+          <h3>🖋️ Typography</h3>
+          <div class="form-group">
+            <label>Heading Font</label>
+            <select id="aHeadingFont">
+              <option value="Syne">Syne (Default)</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Bebas Neue">Bebas Neue</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Poppins">Poppins</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Body Font</label>
+            <select id="aBodyFont">
+              <option value="Outfit">Outfit (Default)</option>
+              <option value="Nunito">Nunito</option>
+              <option value="DM Sans">DM Sans</option>
+              <option value="Lato">Lato</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="saveFontsBtn">Apply Fonts</button>
+        </div>
+        <div class="settings-card">
+          <h3>🗂️ Layout</h3>
+          <div class="form-group">
+            <label>Product Card Style</label>
+            <select id="aCardStyle">
+              <option value="default">Default (Shadow)</option>
+              <option value="bordered">Bordered</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Products per Row (desktop)</label>
+            <select id="aGridCols">
+              <option value="3">3 Columns</option>
+              <option value="4" selected>4 Columns</option>
+              <option value="5">5 Columns</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="saveLayoutBtn">Apply Layout</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══ FIREBASE ══ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc,
+    updateDoc, deleteDoc, onSnapshot, orderBy, query, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAtgvWb8l8E7lRZuYqR0I2X5YzrYP1FiWM",
+    authDomain: "mi-store-39adb.firebaseapp.com",
+    projectId: "mi-store-39adb",
+    storageBucket: "mi-store-39adb.firebasestorage.app",
+    messagingSenderId: "134026252994",
+    appId: "1:134026252994:web:28cd65790cd20fa9b2a15b"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  window.__firebase = { auth, db, signInWithEmailAndPassword, signOut,
+    onAuthStateChanged, collection, doc, getDoc, getDocs, setDoc, addDoc,
+    updateDoc, deleteDoc, onSnapshot, orderBy, query, serverTimestamp };
+
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+<script src="admin.js" defer></script>
+</body>
+</html>
