@@ -4,12 +4,12 @@ import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/fir
 
 // 2. Your Firebase config (keep yours same)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyAtgvWb8l8E7lRZuYqR0I2X5YzrYP1FiWM",
   authDomain: "mi-store-39adb.firebaseapp.com",
   projectId: "mi-store-39adb",
-  storageBucket: "mi-store-39adb.appspot.com",
+  storageBucket: "mi-store-39adb.firebasestorage.app",
   messagingSenderId: "134026252994",
-  appId: "1:134026252994:web:..."
+  appId: "1:134026252994:web:28cd65790cd20fa9b2a15b"
 };
 
 // 3. Initialize Firebase
