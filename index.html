@@ -214,7 +214,10 @@
     updateDoc, deleteDoc, onSnapshot, orderBy, query, serverTimestamp };
 
   // Signal ready
+  window.addEventListener('DOMContentLoaded', () => {
   document.dispatchEvent(new Event('firebaseReady'));
+});
+
 </script>
 <script src="script.js" defer></script>
 </body>

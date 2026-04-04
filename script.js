@@ -322,32 +322,48 @@ function closeLoginModal(){$('loginModal')?.classList.remove('open');$('loginOve
 
 /* KEY FIX: doLogin is a standalone function called by both button click and Enter key */
 async function doLogin(){
-  if(!FB){showToast('Still connecting to Firebase… try again','error');return;}
-  const email=($('loginEmail')?.value||'').trim();
-  const pw=$('loginPassword')?.value||'';
-  const errEl=$('loginError');
-  const btn=$('loginBtn');
-  if(!email||!pw){if(errEl)errEl.textContent='Please enter email and password.';return;}
-  if(errEl)errEl.textContent='';
-  if(btn){btn.disabled=true;btn.textContent='Signing in…';}
+if(!FB){
+  showToast('Connecting... please wait 1-2 seconds','info');
+  return;
+}
+
+  const { auth, signInWithEmailAndPassword } = FB;
+
+  const email = ($('loginEmail')?.value || '').trim();
+  const pw = $('loginPassword')?.value || '';
+  const errEl = $('loginError');
+  const btn = $('loginBtn');
+
+  if(!email || !pw){
+    if(errEl) errEl.textContent = 'Please enter email and password.';
+    return;
+  }
+
+  if(errEl) errEl.textContent = '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Signing in…'; }
+
   try{
-    await FB.signInWithEmailAndPassword(FB.auth,email,pw);
+    await signInWithEmailAndPassword(auth, email, pw);
+
     closeLoginModal();
     showToast('Login successful! Redirecting…','success');
     setTimeout(()=>window.location.href='admin.html',700);
+
   }catch(e){
     let msg='Login failed. Check your credentials.';
-    if(e.code==='auth/invalid-email')         msg='Invalid email format.';
-    if(e.code==='auth/user-not-found')         msg='No account with this email.';
-    if(e.code==='auth/wrong-password')         msg='Incorrect password.';
-    if(e.code==='auth/invalid-credential')     msg='Incorrect email or password.';
-    if(e.code==='auth/too-many-requests')      msg='Too many attempts. Try later.';
+    if(e.code==='auth/invalid-email') msg='Invalid email format.';
+    if(e.code==='auth/user-not-found') msg='No account with this email.';
+    if(e.code==='auth/wrong-password') msg='Incorrect password.';
+    if(e.code==='auth/invalid-credential') msg='Incorrect email or password.';
+    if(e.code==='auth/too-many-requests') msg='Too many attempts. Try later.';
     if(e.code==='auth/network-request-failed') msg='Network error. Check connection.';
-    if(errEl)errEl.textContent=msg;
+    if(errEl) errEl.textContent = msg;
+
   }finally{
-    if(btn){btn.disabled=false;btn.textContent='Sign In';}
+    if(btn){ btn.disabled=false; btn.textContent='Sign In'; }
   }
 }
+
 
 /* ─── FIREBASE READY ─── */
 document.addEventListener('firebaseReady',()=>{
