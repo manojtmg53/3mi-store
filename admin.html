@@ -653,7 +653,10 @@
     onAuthStateChanged, collection, doc, getDoc, getDocs, setDoc, addDoc,
     updateDoc, deleteDoc, onSnapshot, orderBy, query, serverTimestamp };
 
+  window.addEventListener('DOMContentLoaded', () => {
   document.dispatchEvent(new Event('firebaseReady'));
+});
+
 </script>
 <script src="admin.js" defer></script>
 </body>
