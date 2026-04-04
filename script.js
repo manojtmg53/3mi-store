@@ -243,7 +243,7 @@ function waCheckout(){
     return `• ${p.name}${variant?' ('+variant+')':''} × ${item.qty} = ${fmtRs(fp*item.qty)}`;
   }).filter(Boolean);
   const total=cart.reduce((s,i)=>{const p=products.find(x=>x.id===i.id);return p?s+finalPrice(p.originalPrice,p.discount||0)*i.qty:s;},0);
-  const msg=`🛍️ *New Order — ${settings.storeName||'3mi Store'}*\n\n${lines.join('\n')}\n\n━━━━━━━━━━━━\n*Total: ${fmtRs(total)}*\n\nPlease confirm my order. Thank you! 🙏`;
+  const msg=`🛍️ *New Order — ${settings.storeName||'3mi Store'}*\n\n${lines.join('\n')}\n\n━━━━━━━━━━━━\n*Total(Delivery charge not included): ${fmtRs(total)}*\n\nPlease confirm my order. Thank you! 🙏`;
   window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
