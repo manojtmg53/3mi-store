@@ -196,12 +196,12 @@
 
   // ── FIREBASE CONFIG (replace with your own) ──
   const firebaseConfig = {
-    apiKey: "AIzaSyAtgvWb8l8E7lRZuYqR0I2X5YzrYP1FiWM",
-    authDomain: "mi-store-39adb.firebaseapp.com",
-    projectId: "mi-store-39adb",
-    storageBucket: "mi-store-39adb.firebasestorage.app",
-    messagingSenderId: "134026252994",
-    appId: "1:134026252994:web:28cd65790cd20fa9b2a15b"
+  apiKey: "AIzaSyAtgvWb8l8E7lRZuYqR0I2X5YzrYP1FiWM",
+  authDomain: "mi-store-39adb.firebaseapp.com",
+  projectId: "mi-store-39adb",
+  storageBucket: "mi-store-39adb.firebasestorage.app",
+  messagingSenderId: "134026252994",
+  appId: "1:134026252994:web:28cd65790cd20fa9b2a15b"
   };
 
   const app  = initializeApp(firebaseConfig);
@@ -216,6 +216,6 @@
   // Signal ready
   document.dispatchEvent(new Event('firebaseReady'));
 </script>
-<script src="script.js" defer></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
