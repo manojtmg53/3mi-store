@@ -400,10 +400,26 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(btn=>{
   btn.addEventListener('click',()=>switchPanel(btn.dataset.panel));
 });
 $('sidebarToggle')?.addEventListener('click',()=>{
-  const sb=$('adminSidebar'),main=document.querySelector('.admin-main');
+  const sb=$('adminSidebar');
   sb.classList.toggle('open');
   sb.classList.toggle('collapsed');
 });
+document.addEventListener('click', (e) => {
+  const sidebar = $('adminSidebar');
+  const toggleBtn = $('sidebarToggle');
+
+  if (!sidebar || !toggleBtn) return;
+
+  if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+    sidebar.classList.remove('open');
+  }
+});
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    $('adminSidebar')?.classList.remove('open');
+  });
+});
+
 
 /* ─── SEARCH/FILTER ─── */
 $('adminSearch')?.addEventListener('input',()=>{
