@@ -243,7 +243,8 @@ function waCheckout(){
     return `• ${p.name}${variant?' ('+variant+')':''} × ${item.qty} = ${fmtRs(fp*item.qty)}`;
   }).filter(Boolean);
   const total=cart.reduce((s,i)=>{const p=products.find(x=>x.id===i.id);return p?s+finalPrice(p.originalPrice,p.discount||0)*i.qty:s;},0);
-const msg=`🛍️ *New Order — ${settings.storeName||'3mi Store'}*\n\n${lines.join('\n')}\n\n━━━━━━━━━━━━\n*Total: ${fmtRs(total)}*\n\nNote: डेलिभरी नेपाल क्यान मुभ (Nepal Can Move) कुरीयर सर्भिस मार्फत हुनेछ। डेलिभरी शुल्क स्थान अनुसार फरक पर्न सक्छ र ग्राहक आफैँले तिर्नु पर्नेछ।\n\nPlease confirm my order. Thank you! 🙏`;
+  const msg=`🛍️ *New Order — ${settings.storeName||'3mi Store'}*\n\n${lines.join('\n')}\n\n━━━━━━━━━━━━\n*Total: ${fmtRs(total)}*\n\nPlease confirm my order. Thank you! 🙏`;
+  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
 /* ─── APPLY SETTINGS ─── */
