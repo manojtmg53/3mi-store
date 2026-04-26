@@ -252,7 +252,7 @@ function applySettings(s){
   settings=s||{};
   const name=s.storeName||'3mi Store';
   document.title=name;
-  const fl=$('footerLogoName');if(fl)fl.innerHTML=`<span style="color:var(--accent)">${escHtml(name.charAt(0))}</span>${escHtml(name.slice(1))}`;
+  const fl=$('footerLogoName');if(fl)fl.textContent = name + ' Store';
   const ft=$('footerTagline');if(ft)ft.textContent=s.tagline||'Quality products, delivered.';
   const fc2=$('footerCopyright');if(fc2)fc2.textContent=s.copyright||`© 2025 ${name}. All rights reserved.`;
   const fc=$('footerContact');
