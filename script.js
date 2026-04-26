@@ -227,7 +227,15 @@ window.orderSingleWa=(id)=>{
   const fp=finalPrice(p.originalPrice,p.discount||0);
   const wa=(settings.whatsapp||'').replace(/\D/g,'');
   if(!wa){showToast('WhatsApp not configured','error');return;}
-  const msg=encodeURIComponent(`🛍️ *Order from ${settings.storeName||'3mi Store'}*\n\n• ${p.name} × 1 = ${fmtRs(fp)}\n\nPlease confirm. Thank you!`);
+const msg=encodeURIComponent(`🛍️ *New Order — ${settings.storeName||'3mi Store'}*
+
+📦 ${p.name} x1 - ${fmtRs(fp)}
+
+━━━━━━━━━━━━
+*Total(Delivery charge not included): ${fmtRs(fp)}*
+
+Please confirm my order. Thank you!`);
+
   window.open(`https://wa.me/${wa}?text=${msg}`,'_blank');
 };
 
