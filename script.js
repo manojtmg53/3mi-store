@@ -137,7 +137,7 @@ function buildCard(p,i){
       <div class="card-category">${escHtml(p.category||'')}</div>
       <div class="card-name">${escHtml(p.name)}</div>
       ${p.brand?`<div class="card-brand">by ${escHtml(p.brand)}</div>`:''}
-      ${(p.shortDesc||p.desc)?`<div class="card-desc">${escHtml(p.shortDesc||p.desc)}</div>`:''}
+      ${(p.shortDesc||p.desc)?`<div class="card-desc">${escHtml(p.shortDesc||p.desc).replace(/\n/g,'<br>')}</div>`:''}
       <div class="card-pricing"><div class="price-row">
         <span class="price-final">${fmtRs(fp)}</span>
         ${disc>0?`<span class="price-original">${fmtRs(p.originalPrice)}</span><span class="price-save">Save ${fmtRs(save)}</span>`:''}
@@ -200,7 +200,7 @@ function openProductDetail(id){
       ${(p.discount&&p.discount>0)?`<span class="pd-price-old">${fmtRs(p.originalPrice)}</span>
         <span class="pd-price-save">Save ${fmtRs(save)} (${p.discount}% OFF)</span>`:''}
     </div>
-    ${(p.desc||p.shortDesc)?`<p class="pd-desc">${escHtml(p.desc||p.shortDesc)}</p>`:''}
+    ${(p.desc||p.shortDesc)?`<p class="pd-desc">${escHtml(p.desc||p.shortDesc).replace(/\n/g,'<br>')}</p>`:''}
     ${sizesHtml}${colorsHtml}${specsHtml}
     <div class="pd-actions">
       <button class="pd-add-cart-btn" ${p.inStock===false?'disabled':''} onclick="addToCartFromDetail('${id}')">
