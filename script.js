@@ -251,7 +251,7 @@ function waCheckout(){
 function applySettings(s){
   settings=s||{};
   const name=s.storeName||'3mi Store';
-  document.title=name;
+  document.title = name + ' Store';
   const fl=$('footerLogoName');if(fl)fl.textContent = name + ' Store';
   const ft=$('footerTagline');if(ft)ft.textContent=s.tagline||'Quality products, delivered.';
   const fc2=$('footerCopyright');if(fc2)fc2.textContent=s.copyright||`© 2025 ${name}. All rights reserved.`;
