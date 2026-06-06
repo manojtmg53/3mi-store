@@ -491,17 +491,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* Auto-open product from shared link */
 window.addEventListener('load',()=>{
 
-  const params = new URLSearchParams(
-    window.location.search
-  );
-
+  const params = new URLSearchParams(window.location.search);
   const productId = params.get('product');
 
   if(!productId) return;
 
-  setTimeout(()=>{
-    openProductDetail(productId);
-  },500);
+  const waitForProduct = setInterval(()=>{
+
+    const product = products.find(
+      p => String(p.id) === String(productId)
+    );
+
+    if(product){
+      clearInterval(waitForProduct);
+      openProductDetail(productId);
+    }
+
+  },300);
 
 });
 
