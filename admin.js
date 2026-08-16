@@ -35,20 +35,23 @@ function switchPanel(name){
   if(title) title.textContent={dashboard:'Dashboard',products:'Products',addProduct:'Add Product',
     storeSettings:'Store Settings',socialLinks:'Social Links',heroSettings:'Hero / Banner',
     appearance:'Appearance'}[name]||name;
+
+  // Close sidebar on mobile after panel selection
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    const sb = $('adminSidebar');
+    const ov = $('sidebarOverlay');
+    if (sb) sb.classList.remove('open');
+    if (sb) sb.classList.add('collapsed');
+    if (ov) ov.classList.remove('open');
+  }
+
   if(name==='products') renderProductTable();
   if(name==='dashboard') renderDashboard();
 }
 window.switchPanel=switchPanel;
 window.setUploadTarget=setUploadTarget;
 window.clearImageField=clearImageField;
-
-/* ─── KEYBOARD SHORTCUTS ─── */
-document.addEventListener('keydown',(e)=>{
-  if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA' || e.target.tagName==='SELECT') return;
-  const map={KeyD:'dashboard',KeyP:'products',KeyA:'addProduct',KeyS:'storeSettings',KeyL:'socialLinks',KeyH:'heroSettings',KeyC:'appearance'};
-  const panel=map[e.code];
-  if(panel) switchPanel(panel);
-});
 
 /* ─── DASHBOARD ─── */
 function renderDashboard(){
@@ -716,6 +719,9 @@ document.addEventListener('click', (e) => {
 
   if (!sidebar || !toggleBtn) return;
 
+  // Only handle outside-clicks on mobile (sidebar hidden by default)
+  if (window.innerWidth >= 768) return;
+
   if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
     sidebar.classList.remove('open');
     sidebar.classList.add('collapsed');
@@ -732,6 +738,29 @@ document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     $('adminSidebar')?.classList.remove('open');
   });
+});
+
+/* ─── RESIZE HANDLER ─── */
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    const isMobile = window.innerWidth < 768;
+    const sb = $('adminSidebar');
+    const ov = $('sidebarOverlay');
+    if (!sb) return;
+
+    if (!isMobile) {
+      // Desktop/tablet: always show sidebar, remove mobile state
+      sb.classList.remove('open', 'collapsed');
+      if (ov) ov.classList.remove('open');
+    } else {
+      // Mobile: ensure collapsed by default
+      if (!sb.classList.contains('open')) {
+        sb.classList.add('collapsed');
+      }
+    }
+  }, 150);
 });
 
 
