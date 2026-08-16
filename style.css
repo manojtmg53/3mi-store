@@ -325,17 +325,38 @@ kbd{background:var(--bg-input);border:1px solid var(--border-strong);border-radi
 }
 
 /* Video embeds in product detail - full width responsive */
-.pd-video{width:100%;aspect-ratio:16/9;background:var(--bg-input);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;display:flex;flex-direction:column}
-.pd-video iframe{width:100%;height:100%;border:none;display:block;flex:1}
+.pd-video{width:100%;aspect-ratio:16/9;background:var(--bg-input);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;display:flex;flex-direction:column;position:relative}
+.pd-video iframe{width:100%;height:100%;border:none;display:block;flex:1;min-height:200px}
 
 /* TikTok specific - vertical video aspect ratio */
 .pd-video-tiktok{aspect-ratio:9/16}
-@media(max-width:768px){
-  .pd-video-tiktok{aspect-ratio:9/16}
-}
+.pd-video-tiktok iframe{min-height:300px}
 
 /* Facebook specific - standard video aspect ratio */
 .pd-video-facebook{aspect-ratio:16/9}
+.pd-video-facebook iframe{min-height:200px}
+
+/* Mobile-specific adjustments for video embeds */
+@media(max-width:768px){
+  .pd-video{aspect-ratio:16/9}
+  .pd-video-tiktok{aspect-ratio:9/16}
+  .pd-video-tiktok iframe{min-height:280px}
+  .pd-video-facebook{aspect-ratio:16/9}
+  .pd-video-facebook iframe{min-height:220px}
+}
+
+@media(max-width:480px){
+  .pd-video{aspect-ratio:16/9}
+  .pd-video-tiktok{aspect-ratio:9/16}
+  .pd-video-tiktok iframe{min-height:250px}
+  .pd-video-facebook{aspect-ratio:16/9}
+  .pd-video-facebook iframe{min-height:200px}
+}
+
+@media(max-width:360px){
+  .pd-video-tiktok iframe{min-height:220px}
+  .pd-video-facebook iframe{min-height:180px}
+}
 
 /* Video link button */
 .pd-video-link{padding:10px 12px;background:rgba(0,0,0,.05);border-top:1px solid var(--border);text-align:right}

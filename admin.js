@@ -21,12 +21,14 @@ function getTikTokEmbedUrl(url) {
     /tiktok\.com\/v\/(\d+)/,                          // https://www.tiktok.com/v/1234567890
     /vm\.tiktok\.com\/([A-Za-z0-9]+)/,                // https://vm.tiktok.com/xxxxx
     /tiktok\.com\/@[\w.-]+\/live\/(\d+)/,             // live videos
+    /tiktok\.com\/t\/([A-Za-z0-9]+)/,                 // https://www.tiktok.com/t/xxxxx (short links)
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
       const videoId = match[1];
-      return `https://www.tiktok.com/embed/v2/${videoId}`;
+      // Use the modern embed format with better mobile support
+      return `https://www.tiktok.com/embed/v2/${videoId}?lang=en&referrer=${encodeURIComponent(window.location.origin)}`;
     }
   }
   return null;
@@ -42,19 +44,26 @@ function getFacebookEmbedUrl(url) {
     /facebook\.com\/reel\/(\d+)/,                         // https://www.facebook.com/reel/1234567890
     /fb\.watch\/([A-Za-z0-9]+)/,                          // https://fb.watch/xxxxx
     /facebook\.com\/video\.php\?v=(\d+)/,                 // old format
+    /facebook\.com\/share\/v\/([A-Za-z0-9]+)/,            // share format
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
       const videoId = match[1];
-      return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+      // For fb.watch short links, we need the full URL
+      let videoUrl = url;
+      if (url.includes('fb.watch')) {
+        videoUrl = `https://fb.watch/${videoId}/`;
+      }
+      // Use modern Facebook video embed with better mobile support
+      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=100%25&show_captions=false`;
     }
   }
   // Try to extract from generic facebook.com URL with video ID
   const genericMatch = url.match(/facebook\.com.*[?&]v=(\d+)/);
   if (genericMatch) {
     const videoId = genericMatch[1];
-    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25&show_captions=false`;
   }
   return null;
 }
@@ -592,6 +601,7 @@ function loadSettingsIntoForm(s){
   $('sGuestCheckout').checked=s.guestCheckout!==false;
   $('sShowStockCount').checked=!!s.showStockCount;
   $('sEnableReviews').checked=!!s.enableReviews;
+  $('sOrdersEnabled').checked=s.ordersEnabled!==false; // Default to true (orders enabled)
   $('sDefaultSort').value=s.defaultSort||'default';
   $('sProductsPerPage').value=s.productsPerPage||'';
   // Hero
@@ -662,6 +672,7 @@ $('saveAllSettingsBtn')?.addEventListener('click',()=>{
     guestCheckout:$('sGuestCheckout').checked,
     showStockCount:$('sShowStockCount').checked,
     enableReviews:$('sEnableReviews').checked,
+    ordersEnabled:$('sOrdersEnabled').checked,
     defaultSort:$('sDefaultSort').value,
     productsPerPage:$('sProductsPerPage').value?parseInt($('sProductsPerPage').value):null,
   };
@@ -710,7 +721,7 @@ window.resetAllSettings=()=>{
       currency:'Rs.',currencyCode:'NPR',
       announcementEnabled:false,announcementColor:'#e63950',announcementTextColor:'#ffffff',
       deliveryCharge:100,freeDeliveryMin:2000,codEnabled:true,
-      guestCheckout:true,showStockCount:false,enableReviews:false,
+      guestCheckout:true,showStockCount:false,enableReviews:false,ordersEnabled:true,
       defaultSort:'default',productsPerPage:20,
       heroEyebrow:'Welcome to',heroTitle:'3mi Store',heroSubtitle:'Discover curated products at unbeatable prices.',
       heroBtnText:'Shop Now',heroBgColor:'#0f0e0d',heroAccentColor:'#e63950',showStats:false,

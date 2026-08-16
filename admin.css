@@ -571,9 +571,11 @@ body.admin-body {
 .img-preview-thumb.video-preview {
   position: relative;
   aspect-ratio: 16/9;
+  min-height: 150px;
 }
 .img-preview-thumb.video-preview.tiktok-preview {
   aspect-ratio: 9/16;
+  min-height: 200px;
 }
 .img-preview-thumb.video-preview iframe {
   width: 100%;
@@ -591,6 +593,25 @@ body.admin-body {
   border-radius: 4px;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+/* Mobile-specific adjustments for video previews in admin */
+@media(max-width:768px){
+  .img-preview-thumb.video-preview {
+    min-height: 180px;
+  }
+  .img-preview-thumb.video-preview.tiktok-preview {
+    min-height: 250px;
+  }
+}
+
+@media(max-width:480px){
+  .img-preview-thumb.video-preview {
+    min-height: 160px;
+  }
+  .img-preview-thumb.video-preview.tiktok-preview {
+    min-height: 220px;
+  }
 }
 
 /* Spec builder */

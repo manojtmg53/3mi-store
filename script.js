@@ -33,12 +33,14 @@ function getTikTokEmbedUrl(url) {
     /tiktok\.com\/v\/(\d+)/,                          // https://www.tiktok.com/v/1234567890
     /vm\.tiktok\.com\/([A-Za-z0-9]+)/,                // https://vm.tiktok.com/xxxxx
     /tiktok\.com\/@[\w.-]+\/live\/(\d+)/,             // live videos
+    /tiktok\.com\/t\/([A-Za-z0-9]+)/,                 // https://www.tiktok.com/t/xxxxx (short links)
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
       const videoId = match[1];
-      return `https://www.tiktok.com/embed/v2/${videoId}`;
+      // Use the modern embed format with better mobile support
+      return `https://www.tiktok.com/embed/v2/${videoId}?lang=en&referrer=${encodeURIComponent(window.location.origin)}`;
     }
   }
   return null;
@@ -54,19 +56,26 @@ function getFacebookEmbedUrl(url) {
     /facebook\.com\/reel\/(\d+)/,                         // https://www.facebook.com/reel/1234567890
     /fb\.watch\/([A-Za-z0-9]+)/,                          // https://fb.watch/xxxxx
     /facebook\.com\/video\.php\?v=(\d+)/,                 // old format
+    /facebook\.com\/share\/v\/([A-Za-z0-9]+)/,            // share format
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
       const videoId = match[1];
-      return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+      // For fb.watch short links, we need the full URL
+      let videoUrl = url;
+      if (url.includes('fb.watch')) {
+        videoUrl = `https://fb.watch/${videoId}/`;
+      }
+      // Use modern Facebook video embed with better mobile support
+      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=100%25&show_captions=false`;
     }
   }
   // Try to extract from generic facebook.com URL with video ID
   const genericMatch = url.match(/facebook\.com.*[?&]v=(\d+)/);
   if (genericMatch) {
     const videoId = genericMatch[1];
-    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25&show_captions=false`;
   }
   return null;
 }
@@ -87,6 +96,11 @@ function saveCart() { localStorage.setItem('3mi_cart_v2', JSON.stringify(cart));
 function updateCartBadge() { const t=$('cartBadge'); if(t) t.textContent = cart.reduce((s,i)=>s+i.qty,0); }
 
 function addToCart(productId, size='', color='') {
+  // Check if orders are enabled
+  if (settings.ordersEnabled === false) {
+    showToast('Orders are currently disabled. Please use "Enquire" to contact us.', 'info');
+    return;
+  }
   const p = products.find(x=>x.id===productId);
   if (!p) { showToast('Product not found','error'); return; }
   if (p.inStock === false) { showToast('Product is out of stock','error'); return; }
@@ -114,7 +128,9 @@ function renderCartItems() {
   const body=$('cartBody'), total=$('cartTotalPrice'); if(!body) return;
   if (!cart.length) {
     body.innerHTML=`<div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty.<br>Add some products!</p></div>`;
-    if(total) total.textContent='Rs. 0'; return;
+    if(total) total.textContent='Rs. 0';
+    updateCartFooter();
+    return;
   }
   let sum=0;
   body.innerHTML=cart.map(item=>{
@@ -137,6 +153,7 @@ function renderCartItems() {
     </div>`;
   }).join('');
   if(total) total.textContent=fmtRs(sum);
+  updateCartFooter();
 }
 
 /* ─── PRODUCTS ─── */
@@ -174,6 +191,13 @@ function buildCard(p,i){
   const outOfStock=p.inStock===false,stockLow=!outOfStock&&p.stock>0&&p.stock<=5;
   const freeShip=p.freeShipping?`<span class="card-tag">🚚 Free Shipping</span>`:'';
   const tagHtml=(p.tags||[]).slice(0,3).map(t=>`<span class="card-tag">${escHtml(t)}</span>`).join('');
+  const ordersEnabled = settings.ordersEnabled !== false;
+  const addToCartBtn = ordersEnabled && !outOfStock
+    ? `<button class="card-add-btn" onclick="event.stopPropagation();addToCartFromCard('${p.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 22c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm11 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Add to Cart
+      </button>`
+    : (outOfStock ? `<button class="card-add-btn" disabled>Out of Stock</button>` : '');
   return `<div class="product-card" style="animation-delay:${i*0.05}s" onclick="openProductDetail('${p.id}')">
     <div class="card-img-wrap">
       ${img}${placeholder}
@@ -193,10 +217,7 @@ function buildCard(p,i){
       ${(tagHtml||freeShip)?`<div class="card-tags">${tagHtml}${freeShip}</div>`:''}
       ${stockLow?`<div class="card-stock stock-low">⚠ Only ${p.stock} left!</div>`:''}
       ${outOfStock?`<div class="card-stock stock-out">Out of Stock</div>`:''}
-      <button class="card-add-btn" ${outOfStock?'disabled':''} onclick="event.stopPropagation();addToCartFromCard('${p.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 22c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm11 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        ${outOfStock?'Out of Stock':'Add to Cart'}
-      </button>
+      ${addToCartBtn}
     </div>
   </div>`;
 }
@@ -233,7 +254,8 @@ function openProductDetail(id){
     const tikTokEmbedUrl = getTikTokEmbedUrl(p.tikTokUrl);
     if (tikTokEmbedUrl) {
       videoHtml = `<div class="pd-video pd-video-tiktok" data-type="tiktok">
-        <iframe src="${escHtml(tikTokEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe src="${escHtml(tikTokEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block';"></iframe>
+        <div class="pd-video-fallback" style="display:none;padding:20px;text-align:center;background:var(--bg-input);border-radius:var(--radius);border:1px solid var(--border)"><a href="${escHtml(p.tikTokUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:var(--accent);color:#fff;border-radius:var(--radius-pill);font-weight:600;text-decoration:none">🎵 Watch on TikTok ↗</a><p style="margin-top:8px;font-size:.8rem;color:var(--text-muted)">Video couldn't load. Tap to watch on TikTok app/website.</p></div>
         <div class="pd-video-link"><a href="${escHtml(p.tikTokUrl)}" target="_blank" rel="noopener noreferrer">🎵 Watch on TikTok ↗</a></div>
       </div>`;
     }
@@ -241,7 +263,8 @@ function openProductDetail(id){
     const fbEmbedUrl = getFacebookEmbedUrl(p.facebookUrl);
     if (fbEmbedUrl) {
       videoHtml = `<div class="pd-video pd-video-facebook" data-type="facebook">
-        <iframe src="${escHtml(fbEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe src="${escHtml(fbEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block';"></iframe>
+        <div class="pd-video-fallback" style="display:none;padding:20px;text-align:center;background:var(--bg-input);border-radius:var(--radius);border:1px solid var(--border)"><a href="${escHtml(p.facebookUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#1877F2;color:#fff;border-radius:var(--radius-pill);font-weight:600;text-decoration:none">📘 Watch on Facebook ↗</a><p style="margin-top:8px;font-size:.8rem;color:var(--text-muted)">Video couldn't load. Tap to watch on Facebook app/website.</p></div>
         <div class="pd-video-link"><a href="${escHtml(p.facebookUrl)}" target="_blank" rel="noopener noreferrer">📘 Watch on Facebook ↗</a></div>
       </div>`;
     }
@@ -296,10 +319,12 @@ function openProductDetail(id){
         ${p.inStock===false?'Out of Stock':'🛒 Add to Cart'}
       </button>
       ${p.inStock===false?'':`
+        ${settings.ordersEnabled !== false ? `
         <button class="pd-wa-btn" onclick="orderSingleWa('${id}')">
           <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Order via WhatsApp
         </button>
+        ` : ''}
         <button class="pd-enquire-btn" onclick="enquireProduct('${id}')">
           <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Enquire
@@ -321,6 +346,10 @@ window.switchPdImg=(thumb,src)=>{const img=$('pdMainImg');if(img)img.src=src;doc
 window.selectPdOption=(btn,type,id,val)=>{btn.closest('.pd-option-btns').querySelectorAll('.pd-option-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(type==='size')selectedSizes[id]=val;else selectedColors[id]=val;};
 window.addToCartFromDetail=(id)=>addToCart(id,selectedSizes[id]||'',selectedColors[id]||'');
 window.orderSingleWa=(id)=>{
+  if (settings.ordersEnabled === false) {
+    showToast('Orders are currently disabled. Please use "Enquire" to contact us.', 'info');
+    return;
+  }
   const p=products.find(x=>x.id===id);if(!p)return;
   const fp=finalPrice(p.originalPrice,p.discount||0);
   const wa=(settings.whatsapp||'').replace(/\D/g,'');
@@ -378,6 +407,10 @@ function calcDelivery(subtotal){
 
 /* ─── WHATSAPP CHECKOUT ─── */
 function waCheckout(){
+  if (settings.ordersEnabled === false) {
+    showToast('Orders are currently disabled. Please use "Enquire" to contact us.', 'info');
+    return;
+  }
   if(!cart.length){showToast('Cart is empty!','error');return;}
   const wa=(settings.whatsapp||'').replace(/\D/g,'');
   if(!wa){showToast('WhatsApp number not set','error');return;}
@@ -736,6 +769,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('cartCloseBtn')?.addEventListener('click',()=>{$('cartDrawer')?.classList.remove('open');$('cartOverlay')?.classList.remove('open');});
   $('cartOverlay')?.addEventListener('click',()=>{$('cartDrawer')?.classList.remove('open');$('cartOverlay')?.classList.remove('open');});
   $('waCheckoutBtn')?.addEventListener('click',waCheckout);
+
+  // Update cart footer visibility based on ordersEnabled
+  function updateCartFooter() {
+    const footer = $('cartFooter');
+    const checkoutBtn = $('waCheckoutBtn');
+    if (footer && checkoutBtn) {
+      if (settings.ordersEnabled === false) {
+        checkoutBtn.style.display = 'none';
+      } else {
+        checkoutBtn.style.display = 'flex';
+      }
+    }
+  }
 
   /* Product detail */
   $('productDetailClose')?.addEventListener('click',()=>{

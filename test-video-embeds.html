@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Embed Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .test-container { margin-bottom: 30px; }
+    .test-url { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; word-break: break-all; }
+    .embed-container { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; margin: 10px 0; }
+    .embed-container iframe { width: 100%; height: 300px; border: none; }
+    .fallback { padding: 20px; text-align: center; background: #f9f9f9; display: none; }
+    .fallback a { display: inline-block; padding: 10px 20px; background: #e63950; color: white; border-radius: 20px; text-decoration: none; }
+    .fallback.fb a { background: #1877F2; }
+    h2 { color: #333; }
+    .video-type { font-weight: bold; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>TikTok & Facebook Video Embed Test</h1>
+  <p>This page tests the video embed URL generation for various TikTok and Facebook URL formats.</p>
+
+  <div id="tests"></div>
+
+  <script>
+    // Copy the functions from script.js
+    function getTikTokEmbedUrl(url) {
+      if (!url) return null;
+      const patterns = [
+        /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+        /tiktok\.com\/v\/(\d+)/,
+        /vm\.tiktok\.com\/([A-Za-z0-9]+)/,
+        /tiktok\.com\/@[\w.-]+\/live\/(\d+)/,
+        /tiktok\.com\/t\/([A-Za-z0-9]+)/,
+      ];
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+          const videoId = match[1];
+          return `https://www.tiktok.com/embed/v2/${videoId}?lang=en&referrer=${encodeURIComponent(window.location.origin)}`;
+        }
+      }
+      return null;
+    }
+
+    function getFacebookEmbedUrl(url) {
+      if (!url) return null;
+      const patterns = [
+        /facebook\.com\/watch\?v=(\d+)/,
+        /facebook\.com\/[\w.-]+\/videos\/(\d+)/,
+        /facebook\.com\/reel\/(\d+)/,
+        /fb\.watch\/([A-Za-z0-9]+)/,
+        /facebook\.com\/video\.php\?v=(\d+)/,
+        /facebook\.com\/share\/v\/([A-Za-z0-9]+)/,
+      ];
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+          const videoId = match[1];
+          let videoUrl = url;
+          if (url.includes('fb.watch')) {
+            videoUrl = `https://fb.watch/${videoId}/`;
+          }
+          return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=100%25&show_captions=false`;
+        }
+      }
+      const genericMatch = url.match(/facebook\.com.*[?&]v=(\d+)/);
+      if (genericMatch) {
+        const videoId = genericMatch[1];
+        return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25&show_captions=false`;
+      }
+      return null;
+    }
+
+    // Test URLs
+    const testUrls = [
+      // TikTok URLs
+      { type: 'TikTok', url: 'https://www.tiktok.com/@username/video/7345678901234567890' },
+      { type: 'TikTok', url: 'https://www.tiktok.com/@john.doe/video/1234567890123456789' },
+      { type: 'TikTok', url: 'https://vm.tiktok.com/ZMMe12345/' },
+      { type: 'TikTok', url: 'https://www.tiktok.com/t/ZMMe12345/' },
+      { type: 'TikTok', url: 'https://www.tiktok.com/@user/live/1234567890' },
+      // Facebook URLs
+      { type: 'Facebook', url: 'https://www.facebook.com/watch?v=1234567890123456' },
+      { type: 'Facebook', url: 'https://www.facebook.com/username/videos/1234567890123456' },
+      { type: 'Facebook', url: 'https://www.facebook.com/reel/1234567890123456' },
+      { type: 'Facebook', url: 'https://fb.watch/abc123xyz/' },
+      { type: 'Facebook', url: 'https://www.facebook.com/video.php?v=1234567890' },
+      { type: 'Facebook', url: 'https://www.facebook.com/share/v/abc123xyz/' },
+    ];
+
+    const container = document.getElementById('tests');
+
+    testUrls.forEach(test => {
+      let embedUrl = null;
+      if (test.type === 'TikTok') {
+        embedUrl = getTikTokEmbedUrl(test.url);
+      } else {
+        embedUrl = getFacebookEmbedUrl(test.url);
+      }
+
+      const div = document.createElement('div');
+      div.className = 'test-container';
+
+      let html = `<h2>${test.type} Test</h2>`;
+      html += `<div class="video-type">Original URL:</div>`;
+      html += `<div class="test-url">${test.url}</div>`;
+
+      if (embedUrl) {
+        html += `<div class="video-type">Generated Embed URL:</div>`;
+        html += `<div class="test-url">${embedUrl}</div>`;
+        html += `<div class="embed-container">`;
+        html += `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+        html += `</div>`;
+        html += `<p style="color: green;">✓ Embed URL generated successfully</p>`;
+      } else {
+        html += `<p style="color: red;">✗ Failed to generate embed URL</p>`;
+      }
+
+      div.innerHTML = html;
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>
