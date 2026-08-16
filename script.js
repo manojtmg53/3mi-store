@@ -24,6 +24,53 @@ const saveAmt    = (p, d) => Math.round(p - finalPrice(p, d));
 const escHtml    = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const ph         = id => PLACEHOLDERS[Math.abs(((id||'x').charCodeAt(0)||0)+((id||'x').charCodeAt(1)||0)) % PLACEHOLDERS.length];
 
+// Extract TikTok video ID and build embed URL
+function getTikTokEmbedUrl(url) {
+  if (!url) return null;
+  // Match various TikTok URL formats
+  const patterns = [
+    /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,           // https://www.tiktok.com/@username/video/1234567890
+    /tiktok\.com\/v\/(\d+)/,                          // https://www.tiktok.com/v/1234567890
+    /vm\.tiktok\.com\/([A-Za-z0-9]+)/,                // https://vm.tiktok.com/xxxxx
+    /tiktok\.com\/@[\w.-]+\/live\/(\d+)/,             // live videos
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const videoId = match[1];
+      return `https://www.tiktok.com/embed/v2/${videoId}`;
+    }
+  }
+  return null;
+}
+
+// Extract Facebook video ID and build embed URL
+function getFacebookEmbedUrl(url) {
+  if (!url) return null;
+  // Match various Facebook video URL formats
+  const patterns = [
+    /facebook\.com\/watch\?v=(\d+)/,                      // https://www.facebook.com/watch?v=1234567890
+    /facebook\.com\/[\w.-]+\/videos\/(\d+)/,              // https://www.facebook.com/username/videos/1234567890
+    /facebook\.com\/reel\/(\d+)/,                         // https://www.facebook.com/reel/1234567890
+    /fb\.watch\/([A-Za-z0-9]+)/,                          // https://fb.watch/xxxxx
+    /facebook\.com\/video\.php\?v=(\d+)/,                 // old format
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const videoId = match[1];
+      return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+    }
+  }
+  // Try to extract from generic facebook.com URL with video ID
+  const genericMatch = url.match(/facebook\.com.*[?&]v=(\d+)/);
+  if (genericMatch) {
+    const videoId = genericMatch[1];
+    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+  }
+  return null;
+}
+
 /* ─── TOAST ─── */
 function showToast(msg, type = 'info') {
   const c = $('toastContainer'); if (!c) return;
@@ -179,12 +226,48 @@ function openProductDetail(id){
   selectedSizes[id]=''; selectedColors[id]='';
   const fp=finalPrice(p.originalPrice,p.discount||0),save=saveAmt(p.originalPrice,p.discount||0);
   const imgs=(p.images||[]).filter(Boolean);
-  const imagesHtml=`<div class="pd-images">
-    <div class="pd-main-img">${imgs[0]?`<img id="pdMainImg" src="${escHtml(imgs[0])}" alt="${escHtml(p.name)}">`:
+
+  // Build video embed if TikTok or Facebook URL exists
+  let videoHtml = '';
+  if (p.tikTokUrl) {
+    const tikTokEmbedUrl = getTikTokEmbedUrl(p.tikTokUrl);
+    if (tikTokEmbedUrl) {
+      videoHtml = `<div class="pd-video pd-video-tiktok" data-type="tiktok">
+        <iframe src="${escHtml(tikTokEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <div class="pd-video-link"><a href="${escHtml(p.tikTokUrl)}" target="_blank" rel="noopener noreferrer">🎵 Watch on TikTok ↗</a></div>
+      </div>`;
+    }
+  } else if (p.facebookUrl) {
+    const fbEmbedUrl = getFacebookEmbedUrl(p.facebookUrl);
+    if (fbEmbedUrl) {
+      videoHtml = `<div class="pd-video pd-video-facebook" data-type="facebook">
+        <iframe src="${escHtml(fbEmbedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <div class="pd-video-link"><a href="${escHtml(p.facebookUrl)}" target="_blank" rel="noopener noreferrer">📘 Watch on Facebook ↗</a></div>
+      </div>`;
+    }
+  }
+
+  // Determine what to show as main content - video takes priority if no images
+  const hasVideo = videoHtml !== '';
+  const hasImages = imgs.length > 0;
+
+  let imagesHtml = `<div class="pd-images">${videoHtml}`;
+
+  if (hasImages) {
+    imagesHtml += `<div class="pd-main-img">${imgs[0]?`<img id="pdMainImg" src="${escHtml(imgs[0])}" alt="${escHtml(p.name)}">`:
       `<div class="card-img-placeholder" style="height:100%">${p.emoji||ph(p.id)}</div>`}</div>
     ${imgs.length>1?`<div class="pd-thumbs">${imgs.map((img,i)=>
       `<div class="pd-thumb ${i===0?'active':''}" onclick="switchPdImg(this,'${escHtml(img)}')"><img src="${escHtml(img)}" alt=""></div>`
-    ).join('')}</div>`:''}</div>`;
+    ).join('')}</div>`:''}`;
+  } else if (hasVideo) {
+    // Video only - no images
+    imagesHtml += `<div class="pd-main-img" style="display:none;"></div>`;
+  } else {
+    // No images, no video - show placeholder
+    imagesHtml += `<div class="pd-main-img"><div class="card-img-placeholder" style="height:100%">${p.emoji||ph(p.id)}</div></div>`;
+  }
+
+  imagesHtml += `</div>`;
   const sizesHtml=(p.sizes&&p.sizes.length)?`<div class="pd-options"><div class="pd-option-label">Size</div>
     <div class="pd-option-btns">${p.sizes.map(s=>`<button class="pd-option-btn" onclick="selectPdOption(this,'size','${id}','${escHtml(s)}')">${escHtml(s)}</button>`).join('')}</div></div>`:'';
   const colorsHtml=(p.colors&&p.colors.length)?`<div class="pd-options"><div class="pd-option-label">Color</div>
@@ -373,7 +456,13 @@ function applySettings(s){
   // ── Footer ──
   const fl=$('footerLogoName'); if(fl) fl.textContent=name;
   const ft=$('footerTagline'); if(ft) ft.textContent=s.tagline||'Quality products, delivered.';
-  const fc2=$('footerCopyright'); if(fc2) fc2.textContent=s.copyright||`© ${new Date().getFullYear()} ${name}. All rights reserved.`;
+  // Copyright always dynamic based on store name (ignores custom copyright field)
+  const fc2=$('footerCopyright'); if(fc2) fc2.textContent=`© ${new Date().getFullYear()} ${name}. All rights reserved.`;
+  // Footer credit (FIXED - always shows Manoj Tamang | Info Manoj regardless of store name)
+  const fCredit=$('footerCredit');
+  if(fCredit) {
+    fCredit.innerHTML=`Made by <a href="https://www.manojtamang53.com.np" target="_blank" rel="noopener noreferrer">Manoj Tamang</a> <span class="credit-separator">|</span> <a href="https://www.manojtamang53.com.np" target="_blank" rel="noopener noreferrer">Info Manoj</a>`;
+  }
 
   // Footer contact
   const fc=$('footerContact');

@@ -12,6 +12,53 @@ const TYPE_COLORS = {New:'#2563eb',Sale:'#e63950',Hot:'#d97706',Featured:'#7c3ae
 const PLACEHOLDERS = ['🛍️','👟','📱','👗','💄','🎒','⌚','🧴','🎧','📦','🎁','🏷️'];
 const ph = id => PLACEHOLDERS[Math.abs((id||'x').charCodeAt(0)+(id||'x').charCodeAt(1))%PLACEHOLDERS.length];
 
+// Extract TikTok video ID and build embed URL (shared with script.js)
+function getTikTokEmbedUrl(url) {
+  if (!url) return null;
+  // Match various TikTok URL formats
+  const patterns = [
+    /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,           // https://www.tiktok.com/@username/video/1234567890
+    /tiktok\.com\/v\/(\d+)/,                          // https://www.tiktok.com/v/1234567890
+    /vm\.tiktok\.com\/([A-Za-z0-9]+)/,                // https://vm.tiktok.com/xxxxx
+    /tiktok\.com\/@[\w.-]+\/live\/(\d+)/,             // live videos
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const videoId = match[1];
+      return `https://www.tiktok.com/embed/v2/${videoId}`;
+    }
+  }
+  return null;
+}
+
+// Extract Facebook video ID and build embed URL (shared with script.js)
+function getFacebookEmbedUrl(url) {
+  if (!url) return null;
+  // Match various Facebook video URL formats
+  const patterns = [
+    /facebook\.com\/watch\?v=(\d+)/,                      // https://www.facebook.com/watch?v=1234567890
+    /facebook\.com\/[\w.-]+\/videos\/(\d+)/,              // https://www.facebook.com/username/videos/1234567890
+    /facebook\.com\/reel\/(\d+)/,                         // https://www.facebook.com/reel/1234567890
+    /fb\.watch\/([A-Za-z0-9]+)/,                          // https://fb.watch/xxxxx
+    /facebook\.com\/video\.php\?v=(\d+)/,                 // old format
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const videoId = match[1];
+      return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+    }
+  }
+  // Try to extract from generic facebook.com URL with video ID
+  const genericMatch = url.match(/facebook\.com.*[?&]v=(\d+)/);
+  if (genericMatch) {
+    const videoId = genericMatch[1];
+    return `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2F${videoId}&show_text=false&width=100%25`;
+  }
+  return null;
+}
+
 let FB, products=[], settings={}, socialLinks={}, heroSettings={}, statsRows=[], editingId=null;
 let adminSearchQ='', adminCatFilter='', adminTypeFilter='';
 
@@ -135,6 +182,8 @@ window.startEdit=function(id){
   $('apImage1').value=(p.images&&p.images[0])||p.image||'';
   $('apImage2').value=(p.images&&p.images[1])||'';
   $('apImage3').value=(p.images&&p.images[2])||'';
+  $('apTikTokUrl').value=p.tikTokUrl||'';
+  $('apFacebookUrl').value=p.facebookUrl||'';
   $('apSizes').value=(p.sizes||[]).join(', ');
   $('apColors').value=(p.colors||[]).join(', ');
   $('apMaterial').value=p.material||'';
@@ -301,8 +350,33 @@ function updateCalcDisplay(){
 function updateImagePreviews(){
   const el=$('adminImgPreviews');if(!el)return;
   const urls=[$('apImage1')?.value,$('apImage2')?.value,$('apImage3')?.value].filter(Boolean);
-  el.innerHTML=urls.map(u=>`<div class="img-preview-thumb"><img src="${escHtml(u)}" alt="" onerror="this.innerHTML='❌'"></div>`).join('')
+  const tikTokUrl=$('apTikTokUrl')?.value;
+  const facebookUrl=$('apFacebookUrl')?.value;
+  let html=urls.map(u=>`<div class="img-preview-thumb"><img src="${escHtml(u)}" alt="" onerror="this.innerHTML='❌'"></div>`).join('')
     +(urls.length<3?`<div class="img-preview-thumb empty">+ More</div>`:'');
+
+  // Add video previews if URLs exist
+  if(tikTokUrl){
+    const embedUrl=getTikTokEmbedUrl(tikTokUrl);
+    if(embedUrl){
+      html+=`<div class="img-preview-thumb video-preview tiktok-preview" title="TikTok Video">
+        <iframe src="${escHtml(embedUrl)}" frameborder="0" allowfullscreen></iframe>
+        <span class="video-label">TikTok</span>
+      </div>`;
+    }
+  }
+  if(facebookUrl){
+    const embedUrl=getFacebookEmbedUrl(facebookUrl);
+    if(embedUrl){
+      html+=`<div class="img-preview-thumb video-preview" title="Facebook Video">
+        <iframe src="${escHtml(embedUrl)}" frameborder="0" allowfullscreen></iframe>
+        <span class="video-label">Facebook</span>
+      </div>`;
+    }
+  }
+
+  el.innerHTML=html;
+
   // Show/hide clear buttons
   [1,2,3].forEach(i=>{
     const actions=$(`img${i}Actions`);
@@ -378,6 +452,11 @@ function clearAllFields(){
   showToast('Form cleared','info');
 }
 
+window.clearVideoFields=function(){
+  $('apTikTokUrl').value='';
+  $('apFacebookUrl').value='';
+}
+
 // Image file → base64
 $('apImageFile')?.addEventListener('change',()=>{
   const file=$('apImageFile').files[0];if(!file)return;
@@ -402,6 +481,8 @@ $('adminProductForm')?.addEventListener('submit',async e=>{
   if(!orig||orig<=0){showToast('Enter a valid price','error');$('apOriginalPrice').focus();return;}
 
   const imgs=[$('apImage1').value.trim(),$('apImage2').value.trim(),$('apImage3').value.trim()].filter(Boolean);
+  const tikTokUrl=$('apTikTokUrl').value.trim()||null;
+  const facebookUrl=$('apFacebookUrl').value.trim()||null;
   const specs={};
   document.querySelectorAll('#specRows .spec-row').forEach(row=>{
     const [kIn,vIn]=row.querySelectorAll('input');
@@ -421,6 +502,8 @@ $('adminProductForm')?.addEventListener('submit',async e=>{
     weight:$('apWeight').value?parseFloat($('apWeight').value):null,
     images:imgs,
     image:imgs[0]||null,
+    tikTokUrl:tikTokUrl,
+    facebookUrl:facebookUrl,
     sizes:$('apSizes').value?$('apSizes').value.split(',').map(s=>s.trim()).filter(Boolean):[],
     colors:$('apColors').value?$('apColors').value.split(',').map(s=>s.trim()).filter(Boolean):[],
     material:$('apMaterial').value.trim()||null,

@@ -149,9 +149,33 @@ img{display:block;max-width:100%}
 .product-card:hover .card-name{color:var(--accent)}
 @keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .card-img-wrap{position:relative;width:100%;aspect-ratio:4/3;background:var(--bg-input);overflow:hidden}
-.card-img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.card-img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;loading:lazy}
 .product-card:hover .card-img{transform:scale(1.06)}
 .card-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,var(--bg-chip) 0%,var(--bg-input) 100%)}
+
+/* Responsive image handling */
+img.responsive-image{
+  width:100%;
+  height:auto;
+  max-width:100%;
+  object-fit:cover;
+}
+
+/* Image container with responsive aspect ratios */
+.img-container{
+  width:100%;
+  overflow:hidden;
+  background:var(--bg-input);
+}
+.img-container img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform .3s ease;
+}
+.img-container:hover img{
+  transform:scale(1.05);
+}
 .card-type-badge{position:absolute;top:10px;left:10px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:var(--radius-pill);backdrop-filter:blur(4px)}
 .type-New{background:rgba(37,99,235,.9);color:#fff}
 .type-Sale{background:rgba(230,57,80,.92);color:#fff}
@@ -243,7 +267,11 @@ kbd{background:var(--bg-input);border:1px solid var(--border-strong);border-radi
 .footer-social-link{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);transition:all var(--transition);background:rgba(255,255,255,.03);backdrop-filter:blur(10px)}
 .footer-social-link:hover{border-color:rgba(255,255,255,.6);color:#fff;transform:translateY(-2px);background:rgba(230,57,80,.2);border-color:var(--accent)}
 .footer-social-link svg{width:17px;height:17px}
-.footer-bottom-text{grid-column:span 2;border-top:1px solid rgba(255,255,255,.08);padding-top:20px;margin-top:10px;font-size:.82rem}
+.footer-bottom-text{grid-column:span 2;border-top:1px solid rgba(255,255,255,.08);padding-top:20px;margin-top:10px;font-size:.82rem;display:flex;flex-direction:column;gap:10px;align-items:start}
+.footer-credit{display:flex;align-items:center;gap:8px;font-size:.8rem;color:rgba(255,255,255,.4);flex-wrap:wrap}
+.footer-credit a{color:rgba(255,255,255,.6);transition:color var(--transition);text-decoration:none}
+.footer-credit a:hover{color:var(--accent);text-decoration:underline}
+.credit-separator{color:rgba(255,255,255,.2)}
 
 /* ── CART DRAWER ── */
 .drawer-overlay,.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;opacity:0;pointer-events:none;transition:opacity var(--transition);backdrop-filter:blur(8px)}
@@ -283,8 +311,60 @@ kbd{background:var(--bg-input);border:1px solid var(--border-strong);border-radi
 .modal-close-btn:hover{border-color:var(--accent);color:var(--accent)}
 .product-detail-inner{padding:24px 28px 30px;clear:both}
 .pd-images{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+
+/* Main image container - responsive */
 .pd-main-img{flex:1;min-width:220px;aspect-ratio:4/3;background:var(--bg-input);border-radius:var(--radius);overflow:hidden}
-.pd-main-img img{width:100%;height:100%;object-fit:cover}
+.pd-main-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform .3s ease;
+}
+.pd-main-img:hover img{
+  transform:scale(1.05);
+}
+
+/* Video embeds in product detail - full width responsive */
+.pd-video{width:100%;aspect-ratio:16/9;background:var(--bg-input);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;display:flex;flex-direction:column}
+.pd-video iframe{width:100%;height:100%;border:none;display:block;flex:1}
+
+/* TikTok specific - vertical video aspect ratio */
+.pd-video-tiktok{aspect-ratio:9/16}
+@media(max-width:768px){
+  .pd-video-tiktok{aspect-ratio:9/16}
+}
+
+/* Facebook specific - standard video aspect ratio */
+.pd-video-facebook{aspect-ratio:16/9}
+
+/* Video link button */
+.pd-video-link{padding:10px 12px;background:rgba(0,0,0,.05);border-top:1px solid var(--border);text-align:right}
+.pd-video-link a{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:var(--accent);text-decoration:none;transition:all var(--transition);padding:8px 14px;border-radius:var(--radius-pill);background:var(--accent-glow)}
+.pd-video-link a:hover{color:var(--accent);background:var(--accent);color:#fff;transform:translateY(-1px);text-decoration:none}
+.pd-video-link svg{width:14px;height:14px}
+[data-theme="dark"] .pd-video-link{background:rgba(255,255,255,.05)}
+[data-theme="dark"] .pd-video-link a{background:var(--accent-glow)}
+
+/* Thumbnails */
+.pd-thumbs{display:flex;flex-direction:column;gap:8px}
+.pd-thumb{width:66px;height:66px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;transition:border-color var(--transition)}
+.pd-thumb.active,.pd-thumb:hover{border-color:var(--accent)}
+.pd-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* Responsive image utilities */
+@media(max-width:768px){
+  .pd-main-img{min-width:100%;aspect-ratio:1/1}
+  .pd-video{aspect-ratio:16/9}
+  .pd-video-tiktok{aspect-ratio:9/16}
+  .pd-thumbs{flex-direction:row;flex-wrap:wrap;justify-content:center}
+  .pd-thumb{width:60px;height:60px}
+}
+@media(max-width:480px){
+  .pd-main-img{aspect-ratio:4/5}
+  .pd-video{aspect-ratio:16/9}
+  .pd-video-tiktok{aspect-ratio:9/16}
+}
+
 .pd-thumbs{display:flex;flex-direction:column;gap:8px}
 .pd-thumb{width:66px;height:66px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;transition:border-color var(--transition)}
 .pd-thumb.active,.pd-thumb:hover{border-color:var(--accent)}
@@ -410,8 +490,10 @@ kbd{background:var(--bg-input);border:1px solid var(--border-strong);border-radi
   .product-detail-modal.open{transform:translateY(0)}
   .product-detail-inner{padding:20px 18px 32px}
   .pd-images{flex-direction:column}
-  .pd-main-img{min-width:0;width:100%}
-  .pd-thumbs{flex-direction:row;flex-wrap:wrap}
+  .pd-main-img{min-width:0;width:100%;aspect-ratio:4/3}
+  .pd-video{min-width:0;width:100%;aspect-ratio:4/3}
+  .pd-video-tiktok iframe{aspect-ratio:9/16}
+  .pd-thumbs{flex-direction:row;flex-wrap:wrap;justify-content:center}
   .pd-name{font-size:1.35rem}
   .pd-price-final{font-size:1.5rem}
   .pd-actions{flex-direction:column}
