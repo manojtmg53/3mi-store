@@ -86,7 +86,7 @@ body.admin-body {
   transition: transform var(--adm-transition);
   overflow-y: auto;
 }
-.admin-sidebar.collapsed { transform: translateX(-230px); }
+.admin-sidebar.collapsed { transform: translateX(-100%); }
 .sidebar-logo {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -878,9 +878,9 @@ body.admin-body {
   .settings-grid { grid-template-columns: 1fr; }
   .settings-card.span-2 { grid-column: span 1; }
 }
-/* Mobile (<768px): hide sidebar, show toggle */
+/* Mobile (<768px): hide sidebar by default, show toggle */
 @media (max-width: 767px) {
-  .admin-sidebar { transform: translateX(-230px); }
+  .admin-sidebar:not(.open) { transform: translateX(-100%); }
   .admin-sidebar.open { transform: translateX(0); }
   .admin-main { margin-left: 0; }
   .panel { padding: 20px 16px 40px; }
@@ -955,6 +955,6 @@ body.admin-body {
 @media (min-width: 768px) {
   .sidebar-overlay { display: none !important; }
   .sidebar-toggle { display: none !important; }
-  .admin-sidebar { transform: translateX(0) !important; }
-  .admin-main { margin-left: 230px !important; }
+  .admin-sidebar:not(.collapsed) { transform: translateX(0); }
+  .admin-main { margin-left: 230px; }
 }

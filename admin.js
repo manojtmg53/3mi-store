@@ -703,6 +703,24 @@ window.disableAllSocial=()=>{
 };
 
 /* ─── SIDEBAR & PANEL NAV ─── */
+function initSidebarState() {
+  const isMobile = window.innerWidth < 768;
+  const sb = $('adminSidebar');
+  const ov = $('sidebarOverlay');
+  if (!sb) return;
+
+  if (isMobile) {
+    // Mobile: start collapsed
+    sb.classList.add('collapsed');
+    sb.classList.remove('open');
+    if (ov) ov.classList.remove('open');
+  } else {
+    // Desktop/tablet: always show
+    sb.classList.remove('open', 'collapsed');
+    if (ov) ov.classList.remove('open');
+  }
+}
+
 document.querySelectorAll('.nav-item[data-panel]').forEach(btn=>{
   btn.addEventListener('click',()=>switchPanel(btn.dataset.panel));
 });
@@ -736,32 +754,28 @@ $('sidebarOverlay')?.addEventListener('click',()=>{
 });
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
-    $('adminSidebar')?.classList.remove('open');
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      const sb = $('adminSidebar');
+      const ov = $('sidebarOverlay');
+      if (sb) {
+        sb.classList.remove('open');
+        sb.classList.add('collapsed');
+      }
+      if (ov) ov.classList.remove('open');
+    }
   });
 });
 
 /* ─── RESIZE HANDLER ─── */
 let resizeTimer = null;
-window.addEventListener('resize', () => {
+function handleResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    const isMobile = window.innerWidth < 768;
-    const sb = $('adminSidebar');
-    const ov = $('sidebarOverlay');
-    if (!sb) return;
-
-    if (!isMobile) {
-      // Desktop/tablet: always show sidebar, remove mobile state
-      sb.classList.remove('open', 'collapsed');
-      if (ov) ov.classList.remove('open');
-    } else {
-      // Mobile: ensure collapsed by default
-      if (!sb.classList.contains('open')) {
-        sb.classList.add('collapsed');
-      }
-    }
+    initSidebarState();
   }, 150);
-});
+}
+window.addEventListener('resize', handleResize);
 
 
 /* ─── SEARCH/FILTER ─── */
@@ -844,6 +858,7 @@ function showAdmin(user){
   $('adminLayout').style.display='flex';
   const tu=$('topbarUser');if(tu)tu.textContent=user.email;
   const ls=$('loadingScreen');if(ls)ls.classList.add('done');
+  initSidebarState();
   switchPanel('dashboard');
   initQuickEditStore();
 }
