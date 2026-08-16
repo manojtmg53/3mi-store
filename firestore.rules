@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════
+// 3mi Store — Firestore Security Rules
+//
+// READ is public (storefront needs products/config).
+// WRITE is restricted to authenticated admins.
+//
+// Two options are provided — UNCOMMENT ONE BLOCK:
+//
+//  OPTION A (recommended): admin custom claim
+//    Set claim on the admin user:
+//      firebase.auth().setCustomUserClaims(uid, { admin: true })
+//    Then use the rules under "OPTION A".
+//
+//  OPTION B (simpler): any authenticated Firebase user can write
+//    Works if only you (and trusted staff) have accounts.
+//    Use the rules under "OPTION B".
+// ═══════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── PUBLIC READ, ADMIN WRITE ──
+    function isAdmin() {
+      // OPTION A: return request.auth.token.admin == true;
+      // OPTION B:
+      return request.auth != null;
+    }
+
+    // Products — anyone can read, only admins write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Config — anyone can read, only admins write
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
